@@ -195,7 +195,7 @@ struct DiscardHand: Identifiable {
 
 //MARK: 遊戲邏輯
 struct BigTwo {
-    private(set) var discardedHands = [DiscardHand]() //create by myself
+    private(set) var discardedHands = [DiscardHand]()
     private(set) var players: [Player]
     
     private var activePlayer: Player {
@@ -379,7 +379,7 @@ struct BigTwo {
                 }
                 //如果存在連續五個數字
                 if rankCount[Rank(rawValue: rankRawValue)!] != nil {
-                    //順子存在的條件為：straightExist為真且rankRawValue>0
+                    //順子成立條件：straightExist為真且rankRawValue>0
                     straightExist = straightExist && rankCount[Rank(rawValue: rankRawValue)!]! > 0
                 } else {
                     straightExist = false
