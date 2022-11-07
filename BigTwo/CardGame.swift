@@ -443,7 +443,7 @@ struct BigTwo {
                     possibleCombination.append(card)
                 }
             }
-            let possibleHands = combinations(possibleCombination, k: 3)
+            let possibleHands = combinations(possibleCombination, k: 5)
             for i in 0 ..< possibleCombination.count {
                 if HandType(possibleHands[i]) != .Invalid {
                     validHands.append(possibleHands[i])
