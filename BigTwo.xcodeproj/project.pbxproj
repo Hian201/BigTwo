@@ -7,16 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		55BBF40C291205E1003A4C72 /* CardGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55BBF40B291205E1003A4C72 /* CardGame.swift */; };
+		55BBF40F291236C2003A4C72 /* BigTwoGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55BBF40E291236C2003A4C72 /* BigTwoGame.swift */; };
 		80D293B32911F8990010F502 /* BigTwoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D293B22911F8990010F502 /* BigTwoApp.swift */; };
-		80D293B52911F8990010F502 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D293B42911F8990010F502 /* ContentView.swift */; };
+		80D293B52911F8990010F502 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D293B42911F8990010F502 /* MainView.swift */; };
 		80D293B72911F89A0010F502 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 80D293B62911F89A0010F502 /* Assets.xcassets */; };
 		80D293BA2911F89A0010F502 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 80D293B92911F89A0010F502 /* Preview Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		55BBF40B291205E1003A4C72 /* CardGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardGame.swift; sourceTree = "<group>"; };
+		55BBF40E291236C2003A4C72 /* BigTwoGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BigTwoGame.swift; sourceTree = "<group>"; };
 		80D293AF2911F8990010F502 /* BigTwo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BigTwo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		80D293B22911F8990010F502 /* BigTwoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BigTwoApp.swift; sourceTree = "<group>"; };
-		80D293B42911F8990010F502 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		80D293B42911F8990010F502 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		80D293B62911F89A0010F502 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		80D293B92911F89A0010F502 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -32,6 +36,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		55BBF40D29123684003A4C72 /* View Model */ = {
+			isa = PBXGroup;
+			children = (
+				55BBF40E291236C2003A4C72 /* BigTwoGame.swift */,
+			);
+			path = "View Model";
+			sourceTree = "<group>";
+		};
 		80D293A62911F8990010F502 = {
 			isa = PBXGroup;
 			children = (
@@ -52,7 +64,9 @@
 			isa = PBXGroup;
 			children = (
 				80D293B22911F8990010F502 /* BigTwoApp.swift */,
-				80D293B42911F8990010F502 /* ContentView.swift */,
+				80D293B42911F8990010F502 /* MainView.swift */,
+				55BBF40B291205E1003A4C72 /* CardGame.swift */,
+				55BBF40D29123684003A4C72 /* View Model */,
 				80D293B62911F89A0010F502 /* Assets.xcassets */,
 				80D293B82911F89A0010F502 /* Preview Content */,
 			);
@@ -137,8 +151,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				80D293B52911F8990010F502 /* ContentView.swift in Sources */,
+				80D293B52911F8990010F502 /* MainView.swift in Sources */,
+				55BBF40F291236C2003A4C72 /* BigTwoGame.swift in Sources */,
 				80D293B32911F8990010F502 /* BigTwoApp.swift in Sources */,
+				55BBF40C291205E1003A4C72 /* CardGame.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
