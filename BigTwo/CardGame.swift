@@ -248,9 +248,9 @@ struct BigTwo {
         }
     }
     
-    mutating func playSelectCard(of player: Player) {
-        if let playerIndex = players.firstIndex(where: { $0.id == player.id}) {
-            var playerHand = players[playerIndex].cards.filter{$0.selected == true}
+    mutating func playSelectedCard(of player: Player) {
+        if let playerIndex = players.firstIndex(where: { $0.id == player.id }) {
+            var playerHand = players[playerIndex].cards.filter{ $0.selected == true}
             let remainingCards = players[playerIndex].cards.filter { $0.selected == false }
             discardedHands.append(DiscardHand(hand: playerHand, handOwner: player))
             players[playerIndex].cards = remainingCards
@@ -272,7 +272,7 @@ struct BigTwo {
     
     //驅動應該出牌的玩家
     mutating func activatePlayer(_ player: Player) {
-        if let playerIndex = players.firstIndex(where: { $0.id == player.id}) {
+        if let playerIndex = players.firstIndex(where: { $0.id == player.id }) {
             players[playerIndex].activePlayer = true
             
             //如果該出牌的不是玩家，就要換ai處理出牌
@@ -283,7 +283,7 @@ struct BigTwo {
                         //標記要出的牌，出牌同時要從電腦手牌刪除，且放到檯面上
                         select(cpuHand[i], in: activePlayer)
                     }
-                    playSelectCard(of: activePlayer)
+                    playSelectedCard(of: activePlayer)
                 }
             }
         }
@@ -340,7 +340,7 @@ struct BigTwo {
                 continue
             }
             
-            //檢查有有沒有新的重複數字組合大於第一個重複組合，決定有無牌型 pair, three, four, fullhouse
+            //檢查有沒有新的重複數字組合大於第一個重複組合，決定有無牌型 pair, three, four, fullhouse
             if thisRankCount > cardsRankCount1 {
                 if cardsRankCount1 != 1 {
                     //如果有新重複數字牌比較大，就把第一組放到count2, 把新的放到count1
@@ -409,7 +409,7 @@ struct BigTwo {
                 }
             }
             let possibleHands = combinations(possibleCombination, k: 2)
-            for i in 0 ..< possibleCombination.count {
+            for i in 0 ..< possibleHands.count {
                 if HandType(possibleHands[i]) != .Invalid {
                     validHands.append(possibleHands[i])
                 }
@@ -425,7 +425,9 @@ struct BigTwo {
                 }
             }
             let possibleHands = combinations(possibleCombination, k: 3)
-            for i in 0 ..< possibleCombination.count {
+//            print("possibleCombination", possibleCombination.count)
+//            print("possibleHands", possibleHands.count)
+            for i in 0 ..< possibleHands.count { //fix 11/8
                 if HandType(possibleHands[i]) != .Invalid {
                     validHands.append(possibleHands[i])
                 }
@@ -444,7 +446,7 @@ struct BigTwo {
                 }
             }
             let possibleHands = combinations(possibleCombination, k: 5)
-            for i in 0 ..< possibleCombination.count {
+            for i in 0 ..< possibleHands.count {
                 if HandType(possibleHands[i]) != .Invalid {
                     validHands.append(possibleHands[i])
                 }
@@ -456,9 +458,10 @@ struct BigTwo {
         
         //手牌中的出牌必須比上一手大才能出
         for hand in sortedHandsByScore {
-            if let lastDiscardHand = discardedHands.last {
+            if let lastDiscardHand = discardedHands.last { //是不是第一張出牌？
                 //在這裏比較PC手上的牌有沒有比檯面大
-                if (handScore(hand) > handScore(lastDiscardHand.hand) && hand.count == lastDiscardHand.hand.count) ||
+                if (handScore(hand) > handScore(lastDiscardHand.hand) &&
+                    hand.count == lastDiscardHand.hand.count) ||
                     (player.id == lastDiscardHand.handOwner.id) {
                     returnHand = hand
                     break
@@ -470,7 +473,7 @@ struct BigTwo {
                 }
             }
         }
-        print(returnHand)
+//        print(returnHand)
         return returnHand
     }
     
