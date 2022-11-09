@@ -11,12 +11,14 @@ struct MainView: View {
     //做好的遊戲邏輯放進來，且被監視
     @ObservedObject var bigTwo = BigTwoGame()
     
+
+    
     var body: some View {
         GeometryReader { geo in
             VStack {
                 ForEach(bigTwo.players) { player in
                     if !player.playerIsMe {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: -76)]) {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 75), spacing: -50)]) {
                             ForEach(player.cards) {
                                 card in
                                 CardView(card: card)
@@ -59,7 +61,7 @@ struct MainView: View {
                 
                 Button("Next") {
                     //next player
-                    bigTwo.activateNextPlayer()
+                    bigTwo.getNextPlayer()
                 }
             }
         }

@@ -8,7 +8,7 @@
 import Foundation
 
 enum Rank: Int, CaseIterable, Comparable {
-    case Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace, Two
+    case Three=1, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace, Two
     
     static func < (lhs: Rank, rhs: Rank) -> Bool {
         return lhs.rawValue < rhs.rawValue
@@ -25,7 +25,7 @@ enum Suit: Int, CaseIterable, Comparable {
 
 //MARK: 牌型定義
 enum HandType: Int {
-    case Invalid=1, Single, Pair, ThreeOfAKind, Straight, Flush, FullHouse, FourOfAKind, StraightFlush, RoyalFlush
+    case Invalid=0, Single, Pair, ThreeOfAKind, Straight, Flush, FullHouse, FourOfAKind, StraightFlush, RoyalFlush
     
     init(_ cards: Stack) {
         var returnType: Self = .Invalid
@@ -70,16 +70,12 @@ enum HandType: Int {
                 if i + 1 < 5 {
                     //如果第一張是Ace, 而前一張減後一張的差不是1，就不是順子
                     if i == 0 && sortedHand[0].rank == .Ace {
-                        if ((sortedHand[i].rank.rawValue % 13) - (sortedHand[i + 1].rank.rawValue % 13)) != 1 && ((sortedHand[i + 1].rank.rawValue % 12) - (sortedHand[i].rank.rawValue % 12)) != 3 {
+                        if ((sortedHand[i].rank.rawValue % 13) - (sortedHand[i + 1].rank.rawValue % 13)) != 1 &&
+                            ((sortedHand[i + 1].rank.rawValue % 12) - (sortedHand[i].rank.rawValue % 12)) != 3 {
                             isStraight = false
                         }
-                        //無法處理Ace, 2, 3, 4, 5?
-//                        if ((sortedHand[i].rank.rawValue % 13) - (sortedHand[i + 1].rank.rawValue % 13)) != 1 {
-//                            isStraight = false
-//                        }
-                        
                     } else {
-                        if ((sortedHand[i].rank.rawValue % 13) - (sortedHand[i + 1].rank.rawValue % 13)) != 1 && ((sortedHand[i + 1].rank.rawValue % 12) - (sortedHand[i].rank.rawValue % 12)) != 3 {
+                        if ((sortedHand[i].rank.rawValue % 13) - (sortedHand[i + 1].rank.rawValue % 13)) != 1 {
                             isStraight = false
                         }
                     }
@@ -123,9 +119,6 @@ struct Card: Identifiable {
 
 
 //MARK: 玩家定義
-//把卡牌取別名stack
-typealias Stack = [Card]
-
 struct Player: Identifiable {
     var cards = Stack()
     var playerName = ""
@@ -134,7 +127,11 @@ struct Player: Identifiable {
     var id = UUID()
 }
 
+
 //MARK: 數字比較
+//把卡牌取別名stack
+typealias Stack = [Card]
+
 extension Stack where Element == Card {
     func sortByRank() -> Self {
         var sortedHand = Stack()
@@ -160,6 +157,8 @@ extension Stack where Element == Card {
         return sortedHand
     }
 }
+
+
 
 struct Deck {
     private var cards = Stack()
@@ -240,6 +239,17 @@ struct BigTwo {
     }
     
     //將mainview選到的牌id，同時標記到相同玩家手牌中的牌id，彼此同步
+//    mutating func select(_ cards: Stack, in player: Player) {
+//        for i in 0 ... cards.count - 1 {
+//            let card = cards[i]
+//            if let cardIndex = player.cards.firstIndex(where: { $0.id == card.id }) {
+//                if let playerIndex = players.firstIndex(where: { $0.id == player.id }) {
+//                    players[playerIndex].cards[cardIndex].selected.toggle()
+//                }
+//            }
+//        }
+//    }
+//
     mutating func select(_ card: Card, in player: Player) {
         if let cardIndex = player.cards.firstIndex(where: { $0.id == card.id }) {
             if let playerIndex = players.firstIndex(where: { $0.id == player.id }) {
@@ -248,26 +258,33 @@ struct BigTwo {
         }
     }
     
+    
     mutating func playSelectedCard(of player: Player) {
         if let playerIndex = players.firstIndex(where: { $0.id == player.id }) {
             var playerHand = players[playerIndex].cards.filter{ $0.selected == true}
             let remainingCards = players[playerIndex].cards.filter { $0.selected == false }
+            
+//            for i in 0...playerHand.count - 1 {
+//                playerHand[i].back = false
+//            }
             discardedHands.append(DiscardHand(hand: playerHand, handOwner: player))
             players[playerIndex].cards = remainingCards
         }
     }
     
     //換下一家出牌
-    mutating func activateNextPlayerFromCurrent() {
+    mutating func getNextPlayerFromCurrent() -> Player {
+        var nextActivePlayer = Player()
+        
         if let activePlayerIndex = players.firstIndex(where: { $0.activePlayer == true}) {
             let nextPlayerIndex = ((activePlayerIndex + 1) % players.count)
-            let nextActivePlayer = players[nextPlayerIndex]
+            nextActivePlayer = players[nextPlayerIndex]
             //停止目前玩家
             players[activePlayerIndex].activePlayer = false
-            //下一家出牌
-            let nextPlayer = nextActivePlayer
-            activatePlayer(nextPlayer)
+            
         }
+        //返回下一家出牌
+        return nextActivePlayer
     }
     
     //驅動應該出牌的玩家
@@ -480,11 +497,10 @@ struct BigTwo {
     //牌型計分
     func sortHandsByScore(_ unsortedHands: [Stack]) -> [Stack] {
         var sortedHands = [Stack]()
+        var remainingHands = unsortedHands
         
         for _ in 1...unsortedHands.count {
             var highestHandIndex = 0
-            var remainingHands = unsortedHands
-            
             for i in 0...unsortedHands.count {
                 if (i+1) < remainingHands.count {
                     if handScore(remainingHands[i + 1]) > handScore(remainingHands[highestHandIndex]) {
@@ -517,31 +533,7 @@ struct BigTwo {
                 }
             }
 
-            score += (1111 * HandType(hand).rawValue)
-
-//            switch HandType(hand) {
-//            case .Invalid:
-//                score += 0
-//            case .Single:
-//                score += 500
-//            case .Pair:
-//                score += 777
-//            case .ThreeOfAKind:
-//                score += 888
-//            case .Straight:
-//                score += 5000
-//            case .Flush:
-//                score += 5678
-//            case .FullHouse:
-//                score += 6666
-//            case .FourOfAKind:
-//                score += 7777
-//            case .StraightFlush:
-//                score += 8888
-//            case .RoyalFlush:
-//                score += 9999
-//            }
-
+            score += (11111 * HandType(hand).rawValue)
         }
         return score
     }

@@ -6,10 +6,12 @@
       "scale" : "1x"
     },
     {
+      "filename" : "Heart Ten@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "filename" : "Heart Ten@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
