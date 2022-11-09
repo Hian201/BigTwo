@@ -232,7 +232,10 @@ struct BigTwo {
         while deck.cardsRemaining() > 0 {
             for p in randomStratingPlayerIndex...randomStratingPlayerIndex + (players.count - 1) {
                 let i = p % players.count // loop 0,1,2,3,0,1,2,3,0,1,2,3...
-                let card = deck.drawCard() //從牌堆抽出牌
+                var card = deck.drawCard() //從牌堆抽出牌
+                if players[i].playerIsMe {
+                    card.back = false
+                }
                 players[i].cards.append(card) //發牌給玩家
             }
         }
@@ -273,19 +276,31 @@ struct BigTwo {
     }
     
     //換下一家出牌
-    mutating func getNextPlayerFromCurrent() -> Player {
-        var nextActivePlayer = Player()
-        
+//    mutating func getNextPlayerFromCurrent() -> Player {
+//        var nextActivePlayer = Player()
+//
+//        if let activePlayerIndex = players.firstIndex(where: { $0.activePlayer == true}) {
+//            let nextPlayerIndex = ((activePlayerIndex + 1) % players.count) //用餘數把index的範圍限定在0..3
+//            nextActivePlayer = players[nextPlayerIndex]
+//            //停止目前玩家
+//            players[activePlayerIndex].activePlayer = false
+//        }
+//        //返回下一家出牌
+//        return nextActivePlayer
+//    }
+    mutating func getNextPlayerFromCurrent() {
         if let activePlayerIndex = players.firstIndex(where: { $0.activePlayer == true}) {
-            let nextPlayerIndex = ((activePlayerIndex + 1) % players.count)
-            nextActivePlayer = players[nextPlayerIndex]
+            let nextPlayerIndex = ((activePlayerIndex + 1) % players.count) //用餘數把index的範圍限定在0..3
+            let nextActivePlayer = players[nextPlayerIndex]
             //停止目前玩家
             players[activePlayerIndex].activePlayer = false
-            
+            //下一家出牌
+            let nextPlayer = nextActivePlayer
+            activatePlayer(nextPlayer)
         }
-        //返回下一家出牌
-        return nextActivePlayer
     }
+    
+    
     
     //驅動應該出牌的玩家
     mutating func activatePlayer(_ player: Player) {

@@ -25,39 +25,61 @@ struct MainView: View {
                             }
                         }
                         //配置電腦手牌高度
-                        .frame(height: geo.size.height / 6)
+                        .frame(height: geo.size.height / 7)
                     }
                 }
                 //出牌區域
                 ZStack {
                     Rectangle()
                         .foregroundColor(Color.green)
-                    ForEach(bigTwo.discardedHands) { discardHand in
-                        LazyVGrid(columns: Array(repeating: GridItem(.fixed(100), spacing: -30), count: discardHand.hand.count)) {
-                            ForEach(discardHand.hand) { card in
-                                CardView(card: card)
+                    VStack {
+                        ZStack {
+                            ForEach(bigTwo.discardedHands) { discardHand in
+                                //顯示最後出牌者和上次出牌者
+                                let i = bigTwo.discardedHands.firstIndex(where: { $0.id == discardHand.id })
+                                let lastDiscardHand: Bool = ( i == bigTwo.discardedHands.count - 1)
+                                let preDiscardHand: Bool = ( i == bigTwo.discardedHands.count - 2)
+                                LazyVGrid(columns: Array(repeating: GridItem(.fixed(100), spacing: -30), count: discardHand.hand.count)) {
+                                    ForEach(discardHand.hand) { card in
+                                        CardView(card: card)
+                                    }
+                                }
+                                //是最後出牌的圖就0.8倍大，不是就0.65
+                                .scaleEffect(lastDiscardHand ? 0.80 : 0.65)
+                                //是最後出的牌就透明度給1，上一次的就給0.4，都不是給0
+                                .opacity(lastDiscardHand ? 1 : preDiscardHand ? 0.4 : 0)
+                                .offset(y: lastDiscardHand ? 0 : -40)
                             }
+                            
                         }
-                        .scaleEffect(0.80)
+                        //lastIndex=最後出牌者
+                        let lastIndex = bigTwo.discardedHands.count - 1
+                        if lastIndex >= 0 {
+                            //玩家名字為最後出牌者
+                            let playerName = bigTwo.discardedHands[lastIndex].handOwner.playerName
+                            //手牌也是最後出牌者的手牌
+                            let playerHand = bigTwo.discardedHands[lastIndex].hand
+                            //出牌者的牌型辨別
+                            let handType = "\(bigTwo.evaluateHand(playerHand))"
+                            //text放進vstack顯示在出牌區域下方
+                            Text("\(playerName): \(handType)")
+                        }
                     }
-                    
-                    let playerHand = bigTwo.players[3].cards.filter({$0.selected == true})
-                    let handType = "\(bigTwo.evaluateHand(playerHand))"
-                    Text(handType).font(.title)
                 }
-                
-                
+                    
                 //玩家手牌
                 let myPlayer = bigTwo.players[3]
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: -76)]) {
                     ForEach(myPlayer.cards) { card in
                         CardView(card: card)
+                        //offset位移重疊卡牌
                             .offset(y: card.selected ? -30 : 0)
                             .onTapGesture {
                                 bigTwo.select(card, in: myPlayer)
                             }
                     }
                 }
+                    
                 
                 Button("Next") {
                     //next player
