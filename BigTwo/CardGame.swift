@@ -41,7 +41,7 @@ enum HandType: Int {
         }
         
         if cards.count == 3 {
-            if cards[0].rank == cards[1].rank && cards[1].rank == cards[2].rank {
+            if cards[0].rank == cards[1].rank && cards[0].rank == cards[2].rank {
                 returnType = .ThreeOfAKind
             }
         }
