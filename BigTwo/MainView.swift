@@ -14,7 +14,9 @@ struct MainView: View {
     //宣告一個可改變app狀態的state property，用作倒數計時用
     @State private var counter = 0
     
-    //每秒一次，在主執行緒執行，common mode與其他事件並行，autoconnetct立即連接執行
+    @State private var buttonText = "Pass"
+    
+    //計時器：每秒一次，在主執行緒執行，common mode與其他事件並行，autoconnetct立即連接執行
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
@@ -30,6 +32,8 @@ struct MainView: View {
                         }
                         //配置電腦手牌高度
                         .frame(height: geo.size.height / 7)
+                        //是出牌的玩家才給不透明，否則就讓他透明
+                        .opacity(player.activePlayer ? 1 : 0.2)
                     }
                 }
                 //出牌區域
@@ -79,42 +83,66 @@ struct MainView: View {
                         //offset位移重疊卡牌
                             .offset(y: card.selected ? -30 : 0)
                             .onTapGesture {
+//                                bigTwo.select([card], in: myPlayer)
                                 bigTwo.select(card, in: myPlayer)
+                                //宣告被選擇的玩家是人類時
+                                let selectedCards = bigTwo.players[3].cards.filter { $0.selected == true }
+                                if selectedCards.count > 0 &&
+                                    bigTwo.playable(selectedCards, of: myPlayer) {
+                                    buttonText = "Play"
+                                } else {
+                                    buttonText = "Pass"
+                                }
                             }
                     }
                 }
-                Button("Next") {
+                Button(buttonText) {
                     //next player
-                    bigTwo.getNextPlayer()
+                    counter = 0
+                    bigTwo.playSelectedCard(of: myPlayer)
                 }
+                .disabled(myPlayer.activePlayer ? false : true)
             }
         }
         //偵測玩家改變
-        .onChange(of: bigTwo.activePlayer, perform: { player in
-            print("Active player changed")
+        .onChange(of: bigTwo.activePlayer) { player in
+            //如果該出牌的不是玩家，就要換ai處理出牌
             if !player.playerIsMe {
                 let cpuHand = bigTwo.getCPUHand(of: player)
                 if cpuHand.count > 0 {
-                    for i in 0...cpuHand.count - 1 {
-                        //標記要出的牌，出牌同時要從電腦手牌刪除，且放到檯面上
+                    //標記要出的牌，出牌同時要從電腦手牌刪除，且放到檯面上
+                    
+                    for i in 0 ... cpuHand.count - 1 {
                         bigTwo.select(cpuHand[i], in: player)
                     }
                     bigTwo.playSelectedCard(of: player)
+                    
+//                  bigTwo.select(cpuHand, in: player)
+//                }
+//                bigTwo.playSelectedCard(of: player)
                 }
             }
-        })
+        }
+        //接收timer每秒發送的value
         .onReceive(timer) { time in
-            print("Time: \(time)")
+            var nextPlayer = Player()
+            print(counter)
             counter += 1
             if counter >= 2 { //計時器兩秒後歸零
                 counter = 0
                 if bigTwo.discardedHands.count == 0 { //如果台面上沒牌
                     //找第一個有梅花3的玩家出牌
-                    let playerWithLowCard = bigTwo.findStartingPlayer()
-                    bigTwo.activatePlayer(playerWithLowCard)
+                    nextPlayer = bigTwo.findStartingPlayer()
                 } else { //台面上有牌就換下一家出牌
-                    let nextPlayer = bigTwo.getNextPlayer()
-                    bigTwo.activatePlayer(nextPlayer)
+                    nextPlayer = bigTwo.getNextPlayer()
+                }
+                bigTwo.activatePlayer(nextPlayer)
+                //如果下一家是人不是電腦，就給100秒出牌時間
+                if nextPlayer.playerIsMe {
+                    counter = -100
+                    buttonText = "Pass"
+                } else {
+                    counter = 0
                 }
             }
         }

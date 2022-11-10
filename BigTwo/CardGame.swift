@@ -220,7 +220,6 @@ struct BigTwo {
 //        }
 //        return player
 //    }
-
     
     init() {
         let opponents = [
@@ -252,6 +251,17 @@ struct BigTwo {
         }
     }
     
+    //舊select
+    mutating func select(_ card: Card, in player: Player) {
+        if let cardIndex = player.cards.firstIndex(where: { $0.id == card.id }) {
+            if let playerIndex = players.firstIndex(where: { $0.id == player.id }) {
+                players[playerIndex].cards[cardIndex].selected.toggle()
+            }
+        }
+    }
+    
+    
+    //新select，讓function可以 for loop
     //將mainview選到的牌id，同時標記到相同玩家手牌中的牌id，彼此同步
 //    mutating func select(_ cards: Stack, in player: Player) {
 //        for i in 0 ... cards.count - 1 {
@@ -263,23 +273,17 @@ struct BigTwo {
 //            }
 //        }
 //    }
-//
-    mutating func select(_ card: Card, in player: Player) {
-        if let cardIndex = player.cards.firstIndex(where: { $0.id == card.id }) {
-            if let playerIndex = players.firstIndex(where: { $0.id == player.id }) {
-                players[playerIndex].cards[cardIndex].selected.toggle()
-            }
-        }
-    }
+
+
     
     
     mutating func playSelectedCard(of player: Player) {
         if let playerIndex = players.firstIndex(where: { $0.id == player.id }) {
-            var playerHand = players[playerIndex].cards.filter{ $0.selected == true}
+            var playerHand = players[playerIndex].cards.filter{ $0.selected == true }
             let remainingCards = players[playerIndex].cards.filter { $0.selected == false }
             
             //玩家所選到要出的牌每張都翻開
-            for i in 0...playerHand.count - 1 {
+            for i in 0 ... playerHand.count-1 {
                 playerHand[i].back = false
             }
             discardedHands.append(DiscardHand(hand: playerHand, handOwner: player))
@@ -509,6 +513,25 @@ struct BigTwo {
         }
 //        print(returnHand)
         return returnHand
+    }
+    
+    //判定人類玩家可否出牌
+    func playable(_ hand: Stack, of player: Player) -> Bool {
+        var playable = false
+        
+        if let lastDiscardHand = discardedHands.last { //是不是第一張出牌？
+            //在這裏比較玩家手上的牌有沒有比檯面大
+            if (handScore(hand) > handScore(lastDiscardHand.hand) &&
+                hand.count == lastDiscardHand.hand.count) ||
+                (player.id == lastDiscardHand.handOwner.id) {
+                playable = true
+            }
+        } else { // 第一次出牌必須是梅花三
+            if hand.contains(where: {$0.rank == Rank.Three && $0.suit == Suit.Club}) {
+                playable = true
+            }
+        }
+        return playable
     }
     
     //牌型計分整理

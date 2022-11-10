@@ -20,14 +20,15 @@ class BigTwoGame: ObservableObject {
         return model.discardedHands
     }
     
-//    func select(_ cards: Stack, in player: Player) {
-//        model.select(cards, in: player)
-//    }
-    
+    //舊的select
     func select(_ card: Card, in player: Player) {
         model.select(card, in: player)
     }
     
+    //新select
+//    func select(_ cards: Stack, in player: Player) {
+//        model.select(cards, in: player)
+//    }
     
     func evaluateHand(_ cards: Stack) -> HandType {
         return HandType(cards)
@@ -57,8 +58,9 @@ class BigTwoGame: ObservableObject {
     
     func playSelectedCard(of player: Player) {
         model.playSelectedCard(of: player)
-//        if let activePlayerIndex = players.firstIndex(where: { $0.activePlayer == true }) {
-//            gameOver = players[activePlayerIndex]
-//        }
+    }
+    
+    func playable(_ hand: Stack, of player: Player) -> Bool {
+        return model.playable(hand, of: player)
     }
 }
