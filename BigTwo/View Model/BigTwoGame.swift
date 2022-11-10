@@ -10,7 +10,7 @@ import Foundation
 class BigTwoGame: ObservableObject {
     @Published private var model = BigTwo()
     
-    @Published private var activePlayer = Player()
+    @Published private(set) var activePlayer = Player()
     
     var players: [Player] {
         return model.players
@@ -33,18 +33,32 @@ class BigTwoGame: ObservableObject {
         return HandType(cards)
     }
     
-    func getNextPlayer() {
+    func getNextPlayer() -> Player {
         model.getNextPlayerFromCurrent()
     }
     
     func activatePlayer(_ player: Player) {
         model.activatePlayer(player)
-        if let activePlayerIndex = players.firstIndex(where: { $0.activePlayer == true}) {
+        //當啟動下一家玩家的時候，不管他是不是第一個出牌的順序都要啟動
+        if let activePlayerIndex = players.firstIndex(where: { $0.activePlayer == true }) {
+            print("change")
             activePlayer = players[activePlayerIndex]
         }
     }
     
     func findStartingPlayer() -> Player {
         return model.findStartingPlayer()
+    }
+    
+    //拿cpu手牌給onChange用
+    func getCPUHand(of player: Player) -> Stack {
+        return model.getCPUHand(of: player)
+    }
+    
+    func playSelectedCard(of player: Player) {
+        model.playSelectedCard(of: player)
+//        if let activePlayerIndex = players.firstIndex(where: { $0.activePlayer == true }) {
+//            gameOver = players[activePlayerIndex]
+//        }
     }
 }

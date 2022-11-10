@@ -11,7 +11,11 @@ struct MainView: View {
     //做好的遊戲邏輯放進來，且被監視
     @ObservedObject var bigTwo = BigTwoGame()
     
-
+    //宣告一個可改變app狀態的state property，用作倒數計時用
+    @State private var counter = 0
+    
+    //每秒一次，在主執行緒執行，common mode與其他事件並行，autoconnetct立即連接執行
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
         GeometryReader { geo in
@@ -79,21 +83,40 @@ struct MainView: View {
                             }
                     }
                 }
-                    
-                
                 Button("Next") {
                     //next player
                     bigTwo.getNextPlayer()
                 }
             }
         }
-        .onAppear() {
-            print("On Appear")
-            let playerWithLowCard = bigTwo.findStartingPlayer()
-            bigTwo.activatePlayer(playerWithLowCard)
-            print(playerWithLowCard.playerName)
-            print(bigTwo.discardedHands)
-            
+        //偵測玩家改變
+        .onChange(of: bigTwo.activePlayer, perform: { player in
+            print("Active player changed")
+            if !player.playerIsMe {
+                let cpuHand = bigTwo.getCPUHand(of: player)
+                if cpuHand.count > 0 {
+                    for i in 0...cpuHand.count - 1 {
+                        //標記要出的牌，出牌同時要從電腦手牌刪除，且放到檯面上
+                        bigTwo.select(cpuHand[i], in: player)
+                    }
+                    bigTwo.playSelectedCard(of: player)
+                }
+            }
+        })
+        .onReceive(timer) { time in
+            print("Time: \(time)")
+            counter += 1
+            if counter >= 2 { //計時器兩秒後歸零
+                counter = 0
+                if bigTwo.discardedHands.count == 0 { //如果台面上沒牌
+                    //找第一個有梅花3的玩家出牌
+                    let playerWithLowCard = bigTwo.findStartingPlayer()
+                    bigTwo.activatePlayer(playerWithLowCard)
+                } else { //台面上有牌就換下一家出牌
+                    let nextPlayer = bigTwo.getNextPlayer()
+                    bigTwo.activatePlayer(nextPlayer)
+                }
+            }
         }
     }
 }

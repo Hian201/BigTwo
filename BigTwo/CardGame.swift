@@ -109,9 +109,16 @@ enum HandType: Int {
 struct Card: Identifiable {
     var rank: Rank
     var suit: Suit
-    var selected = false     //預設牌沒有被選到
+    var selected = false    //預設牌沒有被選到
+    var back: Bool = true   //預設蓋牌
     var filename: String {
-        return "\(suit) \(rank)"
+        if !back {
+            //如果不是背面就開牌
+            return "\(suit) \(rank)"
+        } else {
+            return "Back"
+        }
+        
     }
     //使用圖檔本身的UUID
     var id = UUID()
@@ -119,12 +126,16 @@ struct Card: Identifiable {
 
 
 //MARK: 玩家定義
-struct Player: Identifiable {
+struct Player: Identifiable, Equatable {
     var cards = Stack()
     var playerName = ""
     var playerIsMe = false
     var activePlayer = false
     var id = UUID()
+    
+    static func == (lhs: Player, rhs: Player) -> Bool {
+        return lhs.id == rhs.id
+    }
 }
 
 
@@ -197,19 +208,19 @@ struct BigTwo {
     private(set) var discardedHands = [DiscardHand]()
     private(set) var players: [Player]
     
-    private var activePlayer: Player {
-        var player = Player()
-        
-        if let activePlayerIndex = players.firstIndex(where: { $0.activePlayer == true}) {
-            player = players[activePlayerIndex]
-        } else {
-            if let humanIndex = players.firstIndex(where: { $0.playerIsMe == true}) {
-                player = players[humanIndex]
-            }
-        }
-        
-        return player
-    }
+//    private var activePlayer: Player {
+//        var player = Player()
+//        
+//        if let activePlayerIndex = players.firstIndex(where: { $0.activePlayer == true}) {
+//            player = players[activePlayerIndex]
+//        } else {
+//            if let humanIndex = players.firstIndex(where: { $0.playerIsMe == true}) {
+//                player = players[humanIndex]
+//            }
+//        }
+//        return player
+//    }
+
     
     init() {
         let opponents = [
@@ -267,38 +278,29 @@ struct BigTwo {
             var playerHand = players[playerIndex].cards.filter{ $0.selected == true}
             let remainingCards = players[playerIndex].cards.filter { $0.selected == false }
             
-//            for i in 0...playerHand.count - 1 {
-//                playerHand[i].back = false
-//            }
+            //玩家所選到要出的牌每張都翻開
+            for i in 0...playerHand.count - 1 {
+                playerHand[i].back = false
+            }
             discardedHands.append(DiscardHand(hand: playerHand, handOwner: player))
             players[playerIndex].cards = remainingCards
         }
     }
     
     //換下一家出牌
-//    mutating func getNextPlayerFromCurrent() -> Player {
-//        var nextActivePlayer = Player()
-//
-//        if let activePlayerIndex = players.firstIndex(where: { $0.activePlayer == true}) {
-//            let nextPlayerIndex = ((activePlayerIndex + 1) % players.count) //用餘數把index的範圍限定在0..3
-//            nextActivePlayer = players[nextPlayerIndex]
-//            //停止目前玩家
-//            players[activePlayerIndex].activePlayer = false
-//        }
-//        //返回下一家出牌
-//        return nextActivePlayer
-//    }
-    mutating func getNextPlayerFromCurrent() {
+    mutating func getNextPlayerFromCurrent() -> Player {
+        var nextActivePlayer = Player()
+
         if let activePlayerIndex = players.firstIndex(where: { $0.activePlayer == true}) {
             let nextPlayerIndex = ((activePlayerIndex + 1) % players.count) //用餘數把index的範圍限定在0..3
-            let nextActivePlayer = players[nextPlayerIndex]
+            nextActivePlayer = players[nextPlayerIndex]
             //停止目前玩家
             players[activePlayerIndex].activePlayer = false
-            //下一家出牌
-            let nextPlayer = nextActivePlayer
-            activatePlayer(nextPlayer)
         }
+        //返回下一家出牌
+        return nextActivePlayer
     }
+
     
     
     
@@ -307,17 +309,17 @@ struct BigTwo {
         if let playerIndex = players.firstIndex(where: { $0.id == player.id }) {
             players[playerIndex].activePlayer = true
             
-            //如果該出牌的不是玩家，就要換ai處理出牌
-            if !activePlayer.playerIsMe {
-                let cpuHand = getCPUHand(of: activePlayer)
-                if cpuHand.count > 0 {
-                    for i in 0...cpuHand.count - 1 {
-                        //標記要出的牌，出牌同時要從電腦手牌刪除，且放到檯面上
-                        select(cpuHand[i], in: activePlayer)
-                    }
-                    playSelectedCard(of: activePlayer)
-                }
-            }
+            //如果該出牌的不是玩家，就要換ai處理出牌(這裡移動到 maniView 自動處理)
+//            if !activePlayer.playerIsMe {
+//                let cpuHand = getCPUHand(of: activePlayer)
+//                if cpuHand.count > 0 {
+//                    for i in 0...cpuHand.count - 1 {
+//                        //標記要出的牌，出牌同時要從電腦手牌刪除，且放到檯面上
+//                        select(cpuHand[i], in: activePlayer)
+//                    }
+//                    playSelectedCard(of: activePlayer)
+//                }
+//            }
         }
     }
     
@@ -509,7 +511,7 @@ struct BigTwo {
         return returnHand
     }
     
-    //牌型計分
+    //牌型計分整理
     func sortHandsByScore(_ unsortedHands: [Stack]) -> [Stack] {
         var sortedHands = [Stack]()
         var remainingHands = unsortedHands
