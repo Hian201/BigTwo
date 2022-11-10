@@ -15,6 +15,7 @@ struct MainView: View {
     @State private var counter = 0
     
     @State private var buttonText = "Pass"
+    @State private var diablePlayButton = false
     
     //計時器：每秒一次，在主執行緒執行，common mode與其他事件並行，autoconnetct立即連接執行
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -45,8 +46,8 @@ struct MainView: View {
                             ForEach(bigTwo.discardedHands) { discardHand in
                                 //顯示最後出牌者和上次出牌者
                                 let i = bigTwo.discardedHands.firstIndex(where: { $0.id == discardHand.id })
-                                let lastDiscardHand: Bool = ( i == bigTwo.discardedHands.count - 1)
-                                let preDiscardHand: Bool = ( i == bigTwo.discardedHands.count - 2)
+                                let lastDiscardHand: Bool = (i == bigTwo.discardedHands.count - 1)
+                                let prevDiscardHand: Bool = (i == bigTwo.discardedHands.count - 2)
                                 LazyVGrid(columns: Array(repeating: GridItem(.fixed(100), spacing: -30), count: discardHand.hand.count)) {
                                     ForEach(discardHand.hand) { card in
                                         CardView(card: card)
@@ -55,7 +56,7 @@ struct MainView: View {
                                 //是最後出牌的圖就0.8倍大，不是就0.65
                                 .scaleEffect(lastDiscardHand ? 0.80 : 0.65)
                                 //是最後出的牌就透明度給1，上一次的就給0.4，都不是給0
-                                .opacity(lastDiscardHand ? 1 : preDiscardHand ? 0.4 : 0)
+                                .opacity(lastDiscardHand ? 1 : prevDiscardHand ? 0.4 : 0)
                                 .offset(y: lastDiscardHand ? 0 : -40)
                             }
                             
@@ -90,8 +91,10 @@ struct MainView: View {
                                 if selectedCards.count > 0 &&
                                     bigTwo.playable(selectedCards, of: myPlayer) {
                                     buttonText = "Play"
+                                    //diablePlayButton = false
                                 } else {
                                     buttonText = "Pass"
+                                    diablePlayButton = false
                                 }
                             }
                     }
@@ -101,7 +104,7 @@ struct MainView: View {
                     counter = 0
                     bigTwo.playSelectedCard(of: myPlayer)
                 }
-                .disabled(myPlayer.activePlayer ? false : true)
+                .disabled(myPlayer.activePlayer ? diablePlayButton : true)
             }
         }
         //偵測玩家改變
@@ -129,7 +132,7 @@ struct MainView: View {
             print(counter)
             counter += 1
             if counter >= 2 { //計時器兩秒後歸零
-                counter = 0
+                //counter = 0
                 if bigTwo.discardedHands.count == 0 { //如果台面上沒牌
                     //找第一個有梅花3的玩家出牌
                     nextPlayer = bigTwo.findStartingPlayer()

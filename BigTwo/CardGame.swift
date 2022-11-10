@@ -41,7 +41,8 @@ enum HandType: Int {
         }
         
         if cards.count == 3 {
-            if cards[0].rank == cards[1].rank && cards[0].rank == cards[2].rank {
+            if cards[0].rank == cards[1].rank && 
+            cards[0].rank == cards[2].rank {
                 returnType = .ThreeOfAKind
             }
         }
@@ -50,7 +51,7 @@ enum HandType: Int {
         if cards.count == 5 {
             //先把牌面數字由大到小排列
             let sortedHand = cards.sortByRank()
-            
+
             //若第二三四張的三張牌數字相同，而且，第一張等於第四張或是第四張等於第五張
             if (sortedHand[1].rank == sortedHand[2].rank && sortedHand[2].rank == sortedHand[3].rank && (sortedHand[0].rank == sortedHand[3].rank || sortedHand[3].rank == sortedHand[4].rank)) {
                 returnType = .FourOfAKind
@@ -125,18 +126,7 @@ struct Card: Identifiable {
 }
 
 
-//MARK: 玩家定義
-struct Player: Identifiable, Equatable {
-    var cards = Stack()
-    var playerName = ""
-    var playerIsMe = false
-    var activePlayer = false
-    var id = UUID()
-    
-    static func == (lhs: Player, rhs: Player) -> Bool {
-        return lhs.id == rhs.id
-    }
-}
+
 
 
 //MARK: 數字比較
@@ -148,7 +138,7 @@ extension Stack where Element == Card {
         var sortedHand = Stack()
         var remainingCards = self
         
-        for _ in 1...remainingCards.count {
+        for _ in 1 ... remainingCards.count {
             var highestCardIndex = 0 //先假設手牌第一張最大
             for (i, _) in remainingCards.enumerated() { // 列舉作為手牌總數
                 if i + 1 < remainingCards.count { //當前+1的張數小於總張數時才比較牌
@@ -169,12 +159,23 @@ extension Stack where Element == Card {
     }
 }
 
-
+//MARK: 玩家定義
+struct Player: Identifiable, Equatable {
+    var cards = Stack()
+    var playerName = ""
+    var playerIsMe = false
+    var activePlayer = false
+    var id = UUID()
+    
+    static func == (lhs: Player, rhs: Player) -> Bool {
+        return lhs.id == rhs.id
+    }
+}
 
 struct Deck {
     private var cards = Stack()
     
-    mutating func createfullDeck() {
+    mutating func createFullDeck() {
         for suit in Suit.allCases {
             for rank in Rank.allCases {
                 cards.append(Card(rank: rank, suit: suit))
@@ -232,15 +233,15 @@ struct BigTwo {
         players.append(Player(playerName: "Me", playerIsMe: true))
         
         var deck = Deck()
-        deck.createfullDeck()
+        deck.createFullDeck()
         deck.shuffle()
         
         //隨機配置玩家順序以配牌
-        let randomStratingPlayerIndex = Int(arc4random()) % players.count
+        let randomStartingPlayerIndex = Int(arc4random()) % players.count
         
         //牌堆還有牌才抽
         while deck.cardsRemaining() > 0 {
-            for p in randomStratingPlayerIndex...randomStratingPlayerIndex + (players.count - 1) {
+            for p in randomStartingPlayerIndex...randomStartingPlayerIndex + (players.count - 1) {
                 let i = p % players.count // loop 0,1,2,3,0,1,2,3,0,1,2,3...
                 var card = deck.drawCard() //從牌堆抽出牌
                 if players[i].playerIsMe {
@@ -295,7 +296,7 @@ struct BigTwo {
     mutating func getNextPlayerFromCurrent() -> Player {
         var nextActivePlayer = Player()
 
-        if let activePlayerIndex = players.firstIndex(where: { $0.activePlayer == true}) {
+        if let activePlayerIndex = players.firstIndex(where: { $0.activePlayer == true }) {
             let nextPlayerIndex = ((activePlayerIndex + 1) % players.count) //用餘數把index的範圍限定在0..3
             nextActivePlayer = players[nextPlayerIndex]
             //停止目前玩家
@@ -347,10 +348,10 @@ struct BigTwo {
         var rankCount = [Rank : Int]()
         var suitCount = [Suit : Int]()
         
-        let playCardsByRank = player.cards.sortByRank()
+        let playerCardsByRank = player.cards.sortByRank()
         
         //計算手牌，數字重複+1，花色多一種就+1
-        for card in playCardsByRank {
+        for card in playerCardsByRank {
             if rankCount[card.rank] != nil {
                 rankCount[card.rank]! += 1
             } else {
@@ -401,10 +402,10 @@ struct BigTwo {
                 straightExist = true //如果有就往下做檢查
             }
             //數連續五張牌
-            for i in 0...4 {
+            for i in 0 ... 4 {
                 var rankRawValue = 1
-                
-                if rank <= Rank.Ten { //如果是rank小於10的牌
+                //如果是rank小於10的牌
+                if rank <= Rank.Ten { 
                     rankRawValue = rank.rawValue + i
                 } else if rank >= Rank.Ace {
                     //如果牌有rank是Ace:rawValue 或是 2:rawValue=12
@@ -441,7 +442,7 @@ struct BigTwo {
         // Pairs
         if pairExist {
             var possibleCombination = Stack()
-            for card in playCardsByRank {
+            for card in playerCardsByRank {
                 if rankCount[card.rank]! > 1 {
                     possibleCombination.append(card)
                 }
@@ -457,7 +458,7 @@ struct BigTwo {
         // Three of A Kind
         if threeExist {
             var possibleCombination = Stack()
-            for card in playCardsByRank {
+            for card in playerCardsByRank {
                 if rankCount[card.rank]! > 2 {
                     possibleCombination.append(card)
                 }
@@ -475,7 +476,7 @@ struct BigTwo {
         // Four of a Kind, Flush, Straight, FullHouse, 屬於五張牌的牌型一起判斷
         if fourExist || flushExist || straightExist || fullHouseExist {
             var possibleCombination = Stack()
-            for card in playCardsByRank {
+            for card in playerCardsByRank {
                 if (fullHouseExist && rankCount[card.rank]! > 1) ||
                     (fourExist && rankCount[card.rank]! > 3) ||
                     (flushExist && suitCount[card.suit]! > 4) ||
@@ -527,7 +528,7 @@ struct BigTwo {
                 playable = true
             }
         } else { // 第一次出牌必須是梅花三
-            if hand.contains(where: {$0.rank == Rank.Three && $0.suit == Suit.Club}) {
+            if hand.contains(where: { $0.rank == Rank.Three && $0.suit == Suit.Club }) {
                 playable = true
             }
         }
@@ -539,10 +540,10 @@ struct BigTwo {
         var sortedHands = [Stack]()
         var remainingHands = unsortedHands
         
-        for _ in 1...unsortedHands.count {
+        for _ in 1 ... unsortedHands.count {
             var highestHandIndex = 0
-            for i in 0...unsortedHands.count {
-                if (i+1) < remainingHands.count {
+            for i in 0 ... unsortedHands.count {
+                if (i + 1) < remainingHands.count {
                     if handScore(remainingHands[i + 1]) > handScore(remainingHands[highestHandIndex]) {
                         highestHandIndex = i + 1
                     }
