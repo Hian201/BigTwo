@@ -21,14 +21,14 @@ class BigTwoGame: ObservableObject {
     }
     
     //舊的select
-    func select(_ card: Card, in player: Player) {
-        model.select(card, in: player)
-    }
+//    func select(_ card: Card, in player: Player) {
+//        model.select(card, in: player)
+//    }
     
     //新select
-//    func select(_ cards: Stack, in player: Player) {
-//        model.select(cards, in: player)
-//    }
+    func select(_ cards: Stack, in player: Player) {
+        model.select(cards, in: player)
+    }
     
     func evaluateHand(_ cards: Stack) -> HandType {
         return HandType(cards)

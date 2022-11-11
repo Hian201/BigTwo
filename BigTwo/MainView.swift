@@ -15,7 +15,7 @@ struct MainView: View {
     @State private var counter = 0
     
     @State private var buttonText = "Pass"
-    @State private var diablePlayButton = false
+    @State private var disablePlayButton = false
     
     //計時器：每秒一次，在主執行緒執行，common mode與其他事件並行，autoconnetct立即連接執行
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -84,27 +84,34 @@ struct MainView: View {
                         //offset位移重疊卡牌
                             .offset(y: card.selected ? -30 : 0)
                             .onTapGesture {
-//                                bigTwo.select([card], in: myPlayer)
-                                bigTwo.select(card, in: myPlayer)
-                                //宣告被選擇的玩家是人類時
+                                bigTwo.select([card], in: myPlayer)
+//                                bigTwo.select(card, in: myPlayer)
+                                //選擇的玩家是人類時，選的牌篩出陣列
                                 let selectedCards = bigTwo.players[3].cards.filter { $0.selected == true }
-                                if selectedCards.count > 0 &&
-                                    bigTwo.playable(selectedCards, of: myPlayer) {
-                                    buttonText = "Play"
-                                    //diablePlayButton = false
-                                } else {
+                                if selectedCards.count > 0 { //如果選的牌大於0張
+                                    buttonText = "Play" //文字顯示可出牌
+                                    if bigTwo.playable(selectedCards, of: myPlayer) {
+                                        disablePlayButton = false //牌比台面大就隱藏開關取消，變成能按
+                                    } else {
+                                        disablePlayButton = true
+                                    }
+                                } else { //不選牌的情況下可以直接pass
                                     buttonText = "Pass"
-                                    diablePlayButton = false
+                                    disablePlayButton = false
                                 }
                             }
                     }
                 }
-                Button(buttonText) {
+                Button(buttonText) { //達成能playable條件就能出牌
                     //next player
                     counter = 0
-                    bigTwo.playSelectedCard(of: myPlayer)
+                    //玩家出牌放進陣列
+                    let selectedCards = myPlayer.cards.filter { $0.selected == true }
+                    if selectedCards.count > 0 { //選的牌有大於零張才可以出牌
+                        bigTwo.playSelectedCard(of: myPlayer)
+                    }
                 }
-                .disabled(myPlayer.activePlayer ? diablePlayButton : true)
+                .disabled(myPlayer.activePlayer ? disablePlayButton : true)
             }
         }
         //偵測玩家改變
@@ -115,14 +122,14 @@ struct MainView: View {
                 if cpuHand.count > 0 {
                     //標記要出的牌，出牌同時要從電腦手牌刪除，且放到檯面上
                     
-                    for i in 0 ... cpuHand.count - 1 {
-                        bigTwo.select(cpuHand[i], in: player)
-                    }
-                    bigTwo.playSelectedCard(of: player)
-                    
-//                  bigTwo.select(cpuHand, in: player)
+//                    for i in 0 ... cpuHand.count - 1 {
+//                        bigTwo.select(cpuHand[i], in: player)
+//                    }
+//                    bigTwo.playSelectedCard(of: player)
 //                }
-//                bigTwo.playSelectedCard(of: player)
+                
+                bigTwo.select(cpuHand, in: player)
+                bigTwo.playSelectedCard(of: player)
                 }
             }
         }
