@@ -269,19 +269,18 @@ struct BigTwo {
             let card = cards[i]
             if let cardIndex = player.cards.firstIndex(where: { $0.id == card.id }) {
                 if let playerIndex = players.firstIndex(where: { $0.id == player.id }) {
+                    //選到的牌selected打開變成true
                     players[playerIndex].cards[cardIndex].selected.toggle()
                 }
             }
         }
     }
 
-
-    
-    
+    //出牌
     mutating func playSelectedCard(of player: Player) {
         if let playerIndex = players.firstIndex(where: { $0.id == player.id }) { //核對玩家id
-            var playerHand = players[playerIndex].cards.filter{ $0.selected == true } //篩出要出的牌
-            let remainingCards = players[playerIndex].cards.filter { $0.selected == false } //剩下的牌另外篩選
+            var playerHand = players[playerIndex].cards.filter{ $0.selected == true } //選好的牌篩出來
+            let remainingCards = players[playerIndex].cards.filter { $0.selected == false } //剩下的牌另外篩
             print(player.playerName)
             print("手牌數", playerHand.count)
             

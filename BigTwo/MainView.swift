@@ -116,20 +116,13 @@ struct MainView: View {
         }
         //偵測玩家改變
         .onChange(of: bigTwo.activePlayer) { player in
-            //如果該出牌的不是玩家，就要換ai處理出牌
+            //如果該出牌的不是玩家
             if !player.playerIsMe {
+                //ai檢查能否出牌
                 let cpuHand = bigTwo.getCPUHand(of: player)
-                if cpuHand.count > 0 {
-                    //標記要出的牌，出牌同時要從電腦手牌刪除，且放到檯面上
-                    
-//                    for i in 0 ... cpuHand.count - 1 {
-//                        bigTwo.select(cpuHand[i], in: player)
-//                    }
-//                    bigTwo.playSelectedCard(of: player)
-//                }
-                
-                bigTwo.select(cpuHand, in: player)
-                bigTwo.playSelectedCard(of: player)
+                if cpuHand.count > 0 { //如果有牌可出
+                bigTwo.select(cpuHand, in: player) //要出的牌選好
+                bigTwo.playSelectedCard(of: player) //出牌
                 }
             }
         }
