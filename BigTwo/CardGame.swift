@@ -23,6 +23,10 @@ enum Suit: Int, CaseIterable, Comparable {
     }
 }
 
+enum Strategy {
+    case Random, LowestFirst, HighestFirst
+}
+
 //MARK: 牌型定義
 enum HandType: Int {
     case Invalid=0, Single, Pair, ThreeOfAKind, Straight, Flush, FullHouse, FourOfAKind, StraightFlush, RoyalFlush
@@ -165,6 +169,7 @@ struct Player: Identifiable, Equatable {
     var playerName = ""
     var playerIsMe = false
     var activePlayer = false
+    var playStyle: Strategy = .Random //出牌策略
     var id = UUID()
     
     static func == (lhs: Player, rhs: Player) -> Bool {
@@ -225,8 +230,8 @@ struct BigTwo {
     init() {
         let opponents = [
             Player(playerName: "CPU1"),
-            Player(playerName: "CPU2"),
-            Player(playerName: "CPU3")
+            Player(playerName: "CPU2", playStyle: .HighestFirst),
+            Player(playerName: "CPU3", playStyle: .LowestFirst)
         ]
         
         players = opponents
@@ -281,8 +286,8 @@ struct BigTwo {
         if let playerIndex = players.firstIndex(where: { $0.id == player.id }) { //核對玩家id
             var playerHand = players[playerIndex].cards.filter{ $0.selected == true } //選好的牌篩出來
             let remainingCards = players[playerIndex].cards.filter { $0.selected == false } //剩下的牌另外篩
-            print(player.playerName)
-            print("手牌數", playerHand.count)
+            print("目前玩家:", player.playerName)
+            print("出牌張數:", playerHand.count)
             
             //玩家所選到要出的牌每張都翻開
             for i in 0 ... playerHand.count-1 {
@@ -491,25 +496,39 @@ struct BigTwo {
             }
         }
         
-        let sortedHandsByScore = sortHandsByScore(validHands) //降序排列
+        var sortedHandsByScore = sortHandsByScore(validHands) //降序排列
         var returnHand = Stack()
+        
+        if player.playStyle == .Random {
+            sortedHandsByScore = sortedHandsByScore.shuffled()
+        }
+        
+        if player.playStyle == .HighestFirst {
+            sortedHandsByScore = sortedHandsByScore.reversed()
+        }
+        
         
         //手牌中的出牌必須比上一手大才能出
         for hand in sortedHandsByScore {
-            if let lastDiscardHand = discardedHands.last { //是不是第一張出牌？
-                //在這裏比較PC手上的牌有沒有比檯面大
-                if (handScore(hand) > handScore(lastDiscardHand.hand) &&
-                    hand.count == lastDiscardHand.hand.count) ||
-                    (player.id == lastDiscardHand.handOwner.id) {
-                    returnHand = hand
-                    break
-                }
-            } else { // 第一次出牌必須是梅花三
-                if hand.contains(where: {$0.rank == Rank.Three && $0.suit == Suit.Club}) {
-                    returnHand = hand
-                    break
-                }
+            if playable(hand, of: player) {
+                returnHand = hand
             }
+            
+            //直接套playble邏輯，下面可以省略
+//            if let lastDiscardHand = discardedHands.last { //是不是第一張出牌？
+//                //在這裏比較PC手上的牌有沒有比檯面大
+//                if (handScore(hand) > handScore(lastDiscardHand.hand) &&
+//                    hand.count == lastDiscardHand.hand.count) ||
+//                    (player.id == lastDiscardHand.handOwner.id) {
+//                    returnHand = hand
+//                    break
+//                }
+//            } else { // 第一次出牌必須是梅花三
+//                if hand.contains(where: {$0.rank == Rank.Three && $0.suit == Suit.Club}) {
+//                    returnHand = hand
+//                    break
+//                }
+//            }
         }
 //        print(returnHand)
         return returnHand

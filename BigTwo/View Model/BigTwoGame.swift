@@ -12,6 +12,8 @@ class BigTwoGame: ObservableObject {
     
     @Published private(set) var activePlayer = Player()
     
+    @Published private(set) var gameOver = false
+    
     var players: [Player] {
         return model.players
     }
@@ -58,6 +60,9 @@ class BigTwoGame: ObservableObject {
     
     func playSelectedCard(of player: Player) {
         model.playSelectedCard(of: player)
+        if let activePlayerIndex = players.firstIndex(where: { $0.activePlayer == true }) {
+            gameOver = players[activePlayerIndex].cards.count == 0
+        }
     }
     
     func playable(_ hand: Stack, of player: Player) -> Bool {
