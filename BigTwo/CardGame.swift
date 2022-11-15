@@ -235,7 +235,7 @@ struct BigTwo {
         ]
         
         players = opponents
-        players.append(Player(playerName: "Me", playerIsMe: true))
+        players.append(Player(playerName: "You", playerIsMe: true))
         
         var deck = Deck()
         deck.createFullDeck()
