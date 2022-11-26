@@ -14,6 +14,10 @@ class BigTwoGame: ObservableObject {
     
     @Published private(set) var gameOver = false
     
+    static let shared = BigTwoGame()
+
+    @Published var gameID = UUID()
+    
     var players: [Player] {
         return model.players
     }
@@ -68,4 +72,8 @@ class BigTwoGame: ObservableObject {
     func playable(_ hand: Stack, of player: Player) -> Bool {
         return model.playable(hand, of: player)
     }
+    
+//    func resetGame() {
+//        
+//    }
 }

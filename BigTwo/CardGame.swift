@@ -131,11 +131,7 @@ struct Card: Identifiable {
 
 
 
-
-
 //MARK: 數字比較
-//把卡牌取別名stack
-typealias Stack = [Card]
 
 extension Stack where Element == Card {
     func sortByRank() -> Self {
@@ -162,6 +158,9 @@ extension Stack where Element == Card {
         return sortedHand
     }
 }
+
+//把卡牌取別名stack
+typealias Stack = [Card]
 
 //MARK: 玩家定義
 struct Player: Identifiable, Equatable {
@@ -534,7 +533,7 @@ struct BigTwo {
         return returnHand
     }
     
-    //判定人類玩家可否出牌
+    //MARK: - 判定人類玩家可否出牌
     func playable(_ hand: Stack, of player: Player) -> Bool {
         var playable = false
         //是不是第一張出牌？
@@ -554,7 +553,7 @@ struct BigTwo {
         return playable
     }
     
-    //牌型計分整理
+    //MARK: 牌型計分整理
     func sortHandsByScore(_ unsortedHands: [Stack]) -> [Stack] {
         var sortedHands = [Stack]()
         var remainingHands = unsortedHands

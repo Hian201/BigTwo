@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct BigTwoApp: App {
+    @StateObject var appState = BigTwoGame.shared 
+    
     var body: some Scene {
         WindowGroup {
-            MainView()
+            //MainView()
+            SplashScreenView().id(appState.gameID)
         }
     }
 }
